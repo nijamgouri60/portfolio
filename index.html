@@ -216,14 +216,14 @@
       .tool-rows .k{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--faint);padding-top:2px}
       .tool-rows .v{color:var(--muted)}
       .toolkit-label{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.18em;color:var(--muted);text-transform:uppercase;margin-bottom:18px}
-      .toolkit{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line-soft);border-radius:18px;overflow:hidden}
-      .tk{background:var(--bg-2);padding:28px;border-right:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft)}
+      .toolkit{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:1px solid var(--line-soft);border-radius:18px;overflow:hidden;max-width:100%}
+      .tk{background:var(--bg-2);padding:28px;border-right:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft);min-width:0}
       .tk:nth-child(3n){border-right:none}
       .tk:nth-child(n+4){border-bottom:none}
       .tk h4{margin:0 0 6px;font-size:16.5px}
       .tk p{color:var(--faint);font-size:13px;margin:0 0 16px;line-height:1.5}
-      .tk .items{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--muted);line-height:2.05}
-      .tk .items span{margin-right:14px;white-space:nowrap}
+      .tk .items{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--muted);line-height:2.05;display:flex;flex-wrap:wrap;gap:2px 14px}
+      .tk .items span{white-space:nowrap}
 
       /* Contact */
       .contact-card{background:var(--card);border:1px solid var(--line-soft);border-radius:22px;padding:clamp(30px,5vw,56px);text-align:left;position:relative;overflow:hidden}
@@ -271,7 +271,7 @@
         .focus-grid,.proj-grid{grid-template-columns:1fr}
         .skills-grid{grid-template-columns:1fr}
         .orbit{min-height:360px}
-        .toolkit{grid-template-columns:1fr 1fr}
+        .toolkit{grid-template-columns:repeat(2,minmax(0,1fr))}
         .tk:nth-child(3n){border-right:1px solid var(--line-soft)}
         .tk:nth-child(2n){border-right:none}
         .tk:nth-child(n+4){border-bottom:1px solid var(--line-soft)}
@@ -292,7 +292,7 @@
         .exp-head{padding-left:28px}
         .exp-panel{padding-left:28px}
         .exp-points{grid-template-columns:1fr}
-        .toolkit{grid-template-columns:1fr}
+        .toolkit{grid-template-columns:minmax(0,1fr)}
         .tk{border-right:none!important;border-bottom:1px solid var(--line-soft)!important}
         .tk:last-child{border-bottom:none!important}
         .tool-rows .row{grid-template-columns:1fr;gap:3px}
