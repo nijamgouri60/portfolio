@@ -984,13 +984,24 @@
           {k:['hello','hi','hey'], a:"Hey! Ask me about his projects (PlacementTutor, CloudVault), his InternPe ML models, his skills, or how to hire him."}
         ];
         function answerFor(q){
-          var s = ' ' + q.toLowerCase() + ' ';
+          var raw = q.toLowerCase().trim();
+          var s = ' ' + raw + ' ';
+          // Small talk first — so greetings don't fall through to the generic reply
+          if(/^(hi+|hello|hey|namaste|hola)\b/.test(raw) || raw.indexOf('how are you') !== -1 || raw.indexOf('how r you') !== -1 || raw.indexOf("how's it going") !== -1 || raw.indexOf('how is it going') !== -1){
+            return "Hey, I'm doing well — thanks for stopping by! I'm Nijamudeen's portfolio assistant. Ask me about his projects (PlacementTutor, CloudVault, the MCQ Exam Platform), his InternPe ML models, his skills and GATE/DSA numbers, or how to contact him.";
+          }
+          if(raw.indexOf('thank') !== -1){
+            return "You're welcome! If you'd like to know more, try asking about PlacementTutor, CloudVault, his InternPe models, or how to reach him at niju8106@gmail.com.";
+          }
+          if(/^(bye|goodbye|see you)/.test(raw)){
+            return "Thanks for visiting! You can reach Nijamudeen anytime at niju8106@gmail.com or +91 94615 89789.";
+          }
           for(var i=0;i<ANSWERS.length;i++){
             for(var j=0;j<ANSWERS[i].k.length;j++){
               if(s.indexOf(ANSWERS[i].k[j]) !== -1) return ANSWERS[i].a;
             }
           }
-          return "Good question — I answer from what's on this page. Try asking about PlacementTutor, CloudVault, his InternPe models (car price, IPL, breast cancer), his skills and GATE/DSA numbers, or how to contact him. For anything else, email him at niju8106@gmail.com.";
+          return "I don't have that in his portfolio, so I don't want to guess. I answer only from what's on this page — try asking about PlacementTutor, CloudVault, the MCQ Exam Platform, his InternPe models (car price, IPL, breast cancer), his skills and GATE/DSA numbers, or how to contact him. For anything else, email him at niju8106@gmail.com.";
         }
         function addMsg(text, who){
           var d = document.createElement('div');
@@ -1001,12 +1012,60 @@
         }
         function ask(q){
           if(!q || !q.trim()) return;
-          addMsg(q.trim(), 'me');
+          var text = q.trim();
+          addMsg(text, 'me');
           var t = addMsg('···', 'ai typing');
-          setTimeout(function(){
-            t.remove();
-            addMsg(answerFor(q), 'ai');
-          }, 650);
+          /*
+            Real AI: POST /api/chat  { "message": "<user text>" }  ->  { "reply": "..." }
+            The backend is a separate Vercel serverless function (api/chat.js) the owner
+            adds to his repo. It reads GEMINI_API_KEY from Vercel env vars — no key
+            ever lives in this page — and is prompted to answer ONLY from the
+            portfolio facts below, saying so and pointing to niju8106@gmail.com
+            when something isn't on the portfolio.
+            If /api/chat is missing or fails (e.g. this static preview), we fall
+            back to the canned answers above so the chat still works offline.
+          */
+          var controller = null;
+          var timer = null;
+          var fetchPromise;
+          try{
+            if(window.AbortController){
+              controller = new AbortController();
+              timer = setTimeout(function(){ try{ controller.abort(); }catch(e){} }, 12000);
+              fetchPromise = fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: text }),
+                signal: controller.signal
+              });
+            } else {
+              fetchPromise = fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: text })
+              });
+            }
+          }catch(e){
+            if(timer) clearTimeout(timer);
+            if(t.parentNode) t.remove();
+            addMsg(answerFor(text), 'ai');
+            return;
+          }
+          fetchPromise.then(function(res){
+            if(timer) clearTimeout(timer);
+            if(!res.ok) throw new Error('api unavailable');
+            return res.json();
+          }).then(function(data){
+            if(t.parentNode) t.remove();
+            var reply = (data && typeof data.reply === 'string') ? data.reply.trim() : '';
+            addMsg(reply ? reply : answerFor(text), 'ai');
+          }).catch(function(){
+            if(timer) clearTimeout(timer);
+            setTimeout(function(){
+              if(t.parentNode) t.remove();
+              addMsg(answerFor(text), 'ai');
+            }, 350);
+          });
         }
         function openChat(preset){
           chat.classList.add('open');
